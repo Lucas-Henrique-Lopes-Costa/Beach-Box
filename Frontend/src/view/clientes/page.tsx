@@ -228,51 +228,54 @@ export default function ClientesPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <div className="flex justify-between items-center mb-4">
-        <Input
-          placeholder="Pesquisar por nome ou telefone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-sm"
-        />
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline">Novo Cliente</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <h2 className="text-lg font-bold mb-4">Cadastrar Novo Cliente</h2>
-            <form onSubmit={handleSubmit}>
-              <Input
-                placeholder="Nome"
-                value={formData.nome}
-                onChange={(e) =>
-                  setFormData({ ...formData, nome: e.target.value })
-                }
-                className="mb-2"
-              />
-              <Input
-                placeholder="Telefone"
-                value={formData.telefone}
-                onChange={(e) =>
-                  setFormData({ ...formData, telefone: e.target.value })
-                }
-                className="mb-2"
-              />
-              <Input
-                placeholder="Endereço"
-                value={formData.endereco}
-                onChange={(e) =>
-                  setFormData({ ...formData, endereco: e.target.value })
-                }
-                className="mb-2"
-              />
-              <Button type="submit">Salvar</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+    <>
+      <h1 className="text-4xl font-bold text-center mt-10">Clientes</h1>
+      <div className="container mx-auto py-10">
+        <div className="flex justify-between items-center mb-4">
+          <Input
+            placeholder="Pesquisar por nome ou telefone..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="max-w-sm"
+          />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Novo Cliente</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <h2 className="text-lg font-bold mb-4">Cadastrar Novo Cliente</h2>
+              <form onSubmit={handleSubmit}>
+                <Input
+                  placeholder="Nome"
+                  value={formData.nome}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nome: e.target.value })
+                  }
+                  className="mb-2"
+                />
+                <Input
+                  placeholder="Telefone"
+                  value={formData.telefone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, telefone: e.target.value })
+                  }
+                  className="mb-2"
+                />
+                <Input
+                  placeholder="Endereço"
+                  value={formData.endereco}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endereco: e.target.value })
+                  }
+                  className="mb-2"
+                />
+                <Button type="submit">Salvar</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <DataTable columns={columns} data={filteredClientes} />
       </div>
-      <DataTable columns={columns} data={filteredClientes} />
-    </div>
+    </>
   );
 }
