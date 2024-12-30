@@ -1,15 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { ActionCell } from "@/components/ui/ActionCell";
 
 export type Cliente = {
   id: string;
@@ -18,56 +10,43 @@ export type Cliente = {
   enderecos: string[];
 };
 
-export const columns: ColumnDef<Cliente>[] = [
-  {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
-    accessorKey: "nome",
-    header: "Nome",
-  },
-  {
-    accessorKey: "telefone",
-    header: "Telefone",
-  },
-  {
-    accessorKey: "enderecos",
-    header: "Endereços",
-    cell: ({ row }) => (
-      <ul>
-        {row.original.enderecos.map((endereco, index) => (
-          <li key={index}>{endereco}</li>
-        ))}
-      </ul>
-    ),
-  },
-  {
-    id: "actions",
-    header: "Ações",
-    cell: ({ row }) => {
-      const cliente = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menu</span>
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => alert(`Editar: ${cliente.nome}`)}>
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => alert(`Excluir: ${cliente.nome}`)}
-            >
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+// Função para criar colunas com parâmetros onEdit e onDelete
+export const createColumns = (
+  onEdit: (id: string) => void,
+  onDelete: (id: string) => void
+): ColumnDef<Cliente>[] => [
+    {
+      accessorKey: "id",
+      header: "ID",
     },
-  },
-];
+    {
+      accessorKey: "nome",
+      header: "Nome",
+    },
+    {
+      accessorKey: "telefone",
+      header: "Telefone",
+    },
+    {
+      accessorKey: "enderecos",
+      header: "Endereços",
+      cell: ({ row }) => (
+        <ul>
+          {row.original.enderecos.map((endereco, index) => (
+            <li key={index}>{endereco}</li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Ações",
+      cell: ({ row }) => (
+        <ActionCell
+          id={row.original.id}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      ),
+    },
+  ];

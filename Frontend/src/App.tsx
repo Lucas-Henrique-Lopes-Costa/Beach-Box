@@ -1,11 +1,13 @@
-import { Navbar } from "./components/ui/navbar";
-import ClientesPage from "./view/clientes/page";
+import { Navbar } from "@/components/ui/navbar";
+import { AppRoutes } from "@/routes";
 
 export function App() {
   return (
     <>
       <Navbar />
-      <ClientesPage />
+      <main>
+        <AppRoutes />
+      </main>
     </>
   );
 }

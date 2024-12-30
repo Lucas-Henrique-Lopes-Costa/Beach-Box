@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 
 export function Navbar() {
@@ -18,8 +17,8 @@ export function Navbar() {
           <a href="/quadras">
             Quadras
           </a>
-          <a href="/agendamentos">
-            Agendamentos
+          <a href="/unidades">
+            Unidades
           </a>
         </nav>
         {/* Botão de Ação */}
