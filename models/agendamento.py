@@ -1,8 +1,11 @@
+from .observable_interface import Observable
 from sqlalchemy import text
 from Backend.config import Config
 import pandas as pd
 
-class Agendamento:
+class Agendamento(Observable):
+    observers = []  # Lista de observers
+
     def __init__(self, id=None, data_hora_agendamento=None, preco=None, id_cliente=None, id_quadra=None):
         self.engine = Config().conectar_bd()
         self.id = id
@@ -10,6 +13,19 @@ class Agendamento:
         self.preco = preco
         self.id_cliente = id_cliente
         self.id_quadra = id_quadra
+
+    @classmethod
+    def adicionar_observer(cls, observer):
+        cls.observers.append(observer)
+
+    @classmethod
+    def remover_observer(cls, observer):
+        cls.observers.remove(observer)
+
+    @classmethod
+    def notificar_observers(cls, evento):
+        for observer in cls.observers:
+            observer.atualizar(evento)
 
     def cadastrar(self):
         """
@@ -36,6 +52,7 @@ class Agendamento:
                     )
                     self.id = result.fetchone()[0]
                     transaction.commit()  # Confirma a transação
+                    self.notificar_observers("cadastrar")
                     return {"sucesso": f"Agendamento cadastrado com ID {self.id}"}
                 except Exception as e:
                     transaction.rollback()  # Reverte em caso de erro
@@ -79,6 +96,7 @@ class Agendamento:
                     try:
                         connection.execute(query, params)  # Executa a query com os parâmetros
                         transaction.commit()  # Confirma a transação
+                        self.notificar_observers("editar", self.id)
                         return {"sucesso": f"Agendamento {self.id} atualizado com sucesso."}
                     except Exception as e:
                         transaction.rollback()  # Reverte em caso de erro
@@ -107,6 +125,7 @@ class Agendamento:
                 try:
                     connection.execute(query, {"id": int(self.id)})  # Converte para inteiro nativo
                     transaction.commit()  # Confirma a transação
+                    self.notificar_observers("excluir")
                     return {"sucesso": f"Agendamento {self.id} excluído com sucesso."}
                 except Exception as e:
                     transaction.rollback()  # Reverte em caso de erro

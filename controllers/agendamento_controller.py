@@ -1,6 +1,27 @@
+from .observer_interface import Observer
 from models.agendamento import Agendamento
+from models.relatorio import Relatorio
+from datetime import datetime
 
-class AgendamentoController:
+class AgendamentoController(Observer):
+    
+    def __init__(self):
+        self.relatorio = Relatorio()
+        self.conectar_observer()
+
+    def conectar_observer(self):
+        """
+        Conecta o controller como observer dos eventos disparados pelo Agendamento.
+        """
+        Agendamento.adicionar_observer(self)
+
+    def atualizar(self, evento):
+        """
+        Lida com eventos disparados por Agendamento e aciona as atualizações necessárias.
+        """
+        if evento in ["cadastrar", "editar", "excluir"]:
+            self.relatorio.gerar_relatorio_diario(datetime.now().date())
+
     def cadastrar_agendamento(self, data_hora_agendamento, preco, id_cliente, id_quadra):
         """
         Cadastra um novo agendamento com os dados fornecidos.
