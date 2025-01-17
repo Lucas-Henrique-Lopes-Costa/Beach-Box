@@ -6,32 +6,19 @@ import { Cliente, createColumns } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
 
 async function getClientes(): Promise<Cliente[]> {
-  return [
-    {
-      id: "1",
-      nome: "João da Silva",
-      telefone: "123456789",
-      enderecos: ["Rua A, 123", "Avenida B, 456"],
-    },
-    {
-      id: "2",
-      nome: "Maria Oliveira",
-      telefone: "987654321",
-      enderecos: ["Praça C, 789"],
-    },
-    {
-      id: "3",
-      nome: "José Santos",
-      telefone: "456123789",
-      enderecos: ["Alameda D, 321"],
-    },
-    {
-      id: "4",
-      nome: "Ana Souza",
-      telefone: "789456123",
-      enderecos: ["Travessa E, 654"],
-    },
-  ];
+  const response = await fetch("/api/clientes");
+  if (!response.ok) {
+    throw new Error("Erro ao buscar clientes");
+  }
+  const data = await response.json();
+
+  // Adaptar os dados para o formato esperado pelo frontend
+  return data.map((cliente: any) => ({
+    id: cliente.id.toString(),
+    nome: cliente.nome,
+    telefone: cliente.telefone,
+    enderecos: cliente.enderecos || [],
+  }));
 }
 
 export default function ClientesPage() {

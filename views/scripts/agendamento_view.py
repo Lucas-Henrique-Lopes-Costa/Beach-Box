@@ -7,12 +7,17 @@ class TelaAgendamento:
     def menu(self):
         while True:
             print("\n=== Menu Agendamento ===")
+            print("0. Obter todos Agendamentos")
             print("1. Cadastrar Agendamento")
             print("2. Editar Agendamento")
             print("3. Excluir Agendamento")
             print("4. Obter Agendamento")
             print("5. Sair")
             escolha = input("Escolha uma opção: ")
+
+            if escolha == "0":
+                resultado = self.controller.obter_todos_agendamentos()
+                print(resultado)
 
             if escolha == "1":
                 data_hora = input("Digite a data e hora (YYYY-MM-DD HH:MM:SS): ")
