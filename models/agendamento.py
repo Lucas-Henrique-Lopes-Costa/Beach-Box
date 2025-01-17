@@ -162,6 +162,32 @@ class Agendamento(Observable):
         except Exception as e:
             return {"erro": f"Erro ao obter agendamento: {str(e)}"}
 
+    def obter_todos(self):
+        """
+        Obtém todos os agendamentos do banco de dados.
+        Retorna uma lista de instâncias de Agendamento ou uma mensagem de erro.
+        """
+        try:
+            query = text("""
+            SELECT * FROM "beach-box"."Agendamento";
+            """)
+            with self.engine.connect() as connection:
+                result = connection.execute(query)
+                agendamentos = []
+                for row in result:
+                    agendamento = Agendamento(
+                        id=row["id"],
+                        data_hora_agendamento=row["dataHoraAgendamento"],
+                        preco=row["preco"],
+                        id_cliente=row["idCliente"],
+                        id_quadra=row["idQuadra"]
+                    )
+                    agendamentos.append(agendamento)
+                return agendamentos
+
+        except Exception as e:
+            return {"erro": f"Erro ao obter agendamentos: {str(e)}"}
+
     def __str__(self):
         """
         Retorna uma representação legível do objeto Agendamento.

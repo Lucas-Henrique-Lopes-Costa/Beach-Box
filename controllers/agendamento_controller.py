@@ -58,3 +58,9 @@ class AgendamentoController(Observer):
         Obtém os dados de um agendamento com base no ID.
         """
         return Agendamento.obter(id)
+    
+    def obter_todos_agendamentos(self):
+        """
+        Obtém todos os agendamentos cadastrados.
+        """
+        return Agendamento.obter_todos(self)

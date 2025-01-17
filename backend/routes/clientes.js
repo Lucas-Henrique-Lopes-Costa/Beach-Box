@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require(".pnpm/express@4.21.2/node_modules/express");
 const pool = require("../db/pool");
 
 const router = express.Router();
