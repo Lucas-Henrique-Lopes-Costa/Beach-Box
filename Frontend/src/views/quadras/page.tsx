@@ -80,27 +80,17 @@ export default function QuadrasPage() {
     const quadra = quadras.find((q) => q.id === id);
     if (quadra) {
       setSelectedQuadra(quadra);
-
-      // Verificação adicional para quadra.unidades
-      const unidadeId = Array.isArray(quadra.unidades) && quadra.unidades.length > 0
-        ? quadra.unidades[0].id
-        : "";
-
       setFormData({
         nome: quadra.nome,
         localizacao: quadra.localizacao,
         tipo: quadra.tipo,
         precobase: quadra.precobase.toString(),
-        idUnidade: unidadeId,
+        idUnidade: quadra.idUnidade || "", // Garante que idUnidade seja preenchido
         estaDisponivel: quadra.estaDisponivel,
       });
-
-      setIsDialogOpen(true); // Abre o popup
-    } else {
-      toast({ title: "Erro", description: "Quadra não encontrada.", variant: "destructive" });
+      setIsDialogOpen(true);
     }
   };
-
 
   const handleNewQuadra = () => {
     setSelectedQuadra(null);
@@ -112,11 +102,22 @@ export default function QuadrasPage() {
       idUnidade: "",
       estaDisponivel: true,
     });
-    setIsDialogOpen(true); // Abre o popup
+    setIsDialogOpen(true);
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validação: idUnidade é obrigatório
+    if (!formData.idUnidade) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma unidade antes de salvar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const payload = {
@@ -124,7 +125,7 @@ export default function QuadrasPage() {
         localizacao: formData.localizacao,
         tipo: formData.tipo,
         precobase: formData.precobase,
-        idUnidade: formData.idUnidade || null, // Garante que idUnidade seja null se vazio
+        idUnidade: formData.idUnidade,
         estaDisponivel: formData.estaDisponivel,
       };
 
@@ -145,14 +146,13 @@ export default function QuadrasPage() {
       }
 
       setIsDialogOpen(false);
-      fetchQuadras(); // Atualiza a lista de quadras
+      fetchQuadras();
     } catch (error) {
       toast({ title: "Erro ao salvar quadra", description: String(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleDelete = async (id: string) => {
     try {

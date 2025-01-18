@@ -15,7 +15,7 @@ def get_quadras():
     try:
         query = text(
             """
-            SELECT q."id", q."nome", q."localizacao", u."nome" AS unidade, q."precobase", 
+            SELECT q."id", q."nome", q."localizacao", q."idUnidade", u."nome" AS unidade, q."precobase", 
                    q."estaDisponivel", q.tipo
             FROM "beach-box"."Quadra" q
             LEFT JOIN "beach-box"."Unidade" u ON q."idUnidade" = u."id";
@@ -28,6 +28,7 @@ def get_quadras():
                 "id": row["id"],
                 "nome": row["nome"],
                 "localizacao": row["localizacao"],
+                "idUnidade": row["idUnidade"],
                 "unidade": row["unidade"],
                 "precobase": row["precobase"],
                 "estaDisponivel": row["estaDisponivel"],
@@ -110,21 +111,34 @@ def update_quadra(id):
     session = config.get_session()
     try:
         data = request.json
+
+        # Certifica-se de que idUnidade é válido e converte para inteiro, se necessário
+        id_unidade = data.get("idUnidade")
+        if isinstance(id_unidade, str) and id_unidade.isdigit():
+            id_unidade = int(id_unidade)
+        elif not isinstance(id_unidade, int):
+            id_unidade = None
+
         query = text(
             """
             UPDATE "beach-box"."Quadra"
-            SET "nome" = :nome, "localizacao" = :localizacao, "idUnidade" = :idUnidade, 
-                "precobase" = :precobase, "estaDisponivel" = :estaDisponivel, "tipo" = :tipo
+            SET "nome" = :nome,
+                "localizacao" = :localizacao,
+                "idUnidade" = :idUnidade,
+                "precobase" = :precobase,
+                "estaDisponivel" = :estaDisponivel,
+                "tipo" = :tipo
             WHERE "id" = :id;
             """
         )
+
         session.execute(
             query,
             {
                 "id": id,
                 "nome": data["nome"],
                 "localizacao": data["localizacao"],
-                "idUnidade": data["idUnidade"],
+                "idUnidade": id_unidade,
                 "precobase": data["precobase"],
                 "estaDisponivel": data["estaDisponivel"],
                 "tipo": data["tipo"],
@@ -137,7 +151,6 @@ def update_quadra(id):
                 {
                     "status": "success",
                     "message": f"Quadra com ID {id} atualizada com sucesso",
-                    "data": data,
                 }
             ),
             200,

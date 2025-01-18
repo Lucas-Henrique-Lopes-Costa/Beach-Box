@@ -17,6 +17,7 @@ export type Quadra = {
   precobase: number;
   estaDisponivel: boolean;
   unidades: Unidade[];
+  idUnidade: string;
 };
 
 export const createColumns = (
