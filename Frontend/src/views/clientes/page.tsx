@@ -62,7 +62,7 @@ export default function ClientesPage() {
       setFormData({
         nome: cliente.nome,
         telefone: cliente.telefone,
-        endereco: cliente.enderecos[0] || "",
+        endereco: cliente.endereco, // Corrigido para "endereco"
       });
       setIsDialogOpen(true);
     }
@@ -79,29 +79,32 @@ export default function ClientesPage() {
     try {
       setLoading(true);
       if (selectedCliente) {
+        // Atualizar cliente existente
         await fetchAPI(`http://localhost:5001/clientes/${selectedCliente.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nome: formData.nome,
             telefone: formData.telefone,
-            enderecos: [formData.endereco],
+            endereco: formData.endereco, // Corrigido para "endereco"
           }),
         });
         toast({ title: "Cliente atualizado com sucesso", variant: "success" });
       } else {
+        // Criar novo cliente
         await fetchAPI("http://localhost:5001/clientes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nome: formData.nome,
             telefone: formData.telefone,
-            enderecos: [formData.endereco],
+            endereco: formData.endereco, // Corrigido para "endereco"
           }),
         });
         toast({ title: "Cliente criado com sucesso", variant: "success" });
       }
       setIsDialogOpen(false); // Fecha o popup após salvar
+      fetchClientes(); // Atualiza a lista
     } catch (error) {
       toast({ title: "Erro ao salvar cliente", description: String(error), variant: "destructive" });
     } finally {
@@ -114,7 +117,7 @@ export default function ClientesPage() {
       setLoading(true);
       await fetchAPI(`http://localhost:5001/clientes/${id}`, { method: "DELETE" });
       toast({ title: "Cliente excluído com sucesso", variant: "success" });
-      await fetchClientes(); // Atualiza a lista após excluir
+      fetchClientes(); // Atualiza a lista após excluir
     } catch (error) {
       toast({ title: "Erro ao excluir cliente", description: String(error), variant: "destructive" });
     } finally {

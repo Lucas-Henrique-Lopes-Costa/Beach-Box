@@ -7,7 +7,7 @@ export type Cliente = {
   id: string;
   nome: string;
   telefone: string;
-  enderecos: string[];
+  endereco: string;
 };
 
 // Função para criar colunas com parâmetros onEdit e onDelete
@@ -28,15 +28,8 @@ export const createColumns = (
       header: "Telefone",
     },
     {
-      accessorKey: "enderecos",
+      accessorKey: "endereco",
       header: "Endereços",
-      cell: ({ row }) => (
-        <ul>
-          {row.original.enderecos.map((endereco, index) => (
-            <li key={index}>{endereco}</li>
-          ))}
-        </ul>
-      ),
     },
     {
       id: "actions",

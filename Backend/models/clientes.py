@@ -15,12 +15,9 @@ def get_clientes():
     try:
         query = text(
             """
-            SELECT c.id, c.nome, c.telefone, 
-                   ARRAY_AGG(ce.endereco) AS enderecos
-            FROM "beach-box"."Cliente" c
-            LEFT JOIN "beach-box"."ClienteEndereco" ce ON c.id = ce."idCliente"
-            GROUP BY c.id, c.nome, c.telefone;
-        """
+            SELECT id, nome, telefone, endereco
+            FROM "beach-box"."Cliente";
+            """
         )
 
         result = session.execute(query)
@@ -29,7 +26,7 @@ def get_clientes():
                 "id": row["id"],
                 "nome": row["nome"],
                 "telefone": row["telefone"],
-                "enderecos": row["enderecos"] if row["enderecos"] else [],
+                "endereco": row["endereco"],
             }
             for row in result.mappings()
         ]
@@ -60,7 +57,7 @@ def create_cliente():
             get_max_id_query = text(
                 """
                 SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM "beach-box"."Cliente";
-            """
+                """
             )
             result = session.execute(get_max_id_query).mappings().fetchone()
             data["id"] = result["next_id"]
@@ -69,7 +66,7 @@ def create_cliente():
         check_query = text(
             """
             SELECT COUNT(*) AS count FROM "beach-box"."Cliente" WHERE id = :id;
-        """
+            """
         )
         result = session.execute(check_query, {"id": data["id"]}).mappings().fetchone()
 
@@ -87,27 +84,19 @@ def create_cliente():
         # Inserir novo cliente
         query_cliente = text(
             """
-            INSERT INTO "beach-box"."Cliente" (id, nome, telefone)
-            VALUES (:id, :nome, :telefone);
-        """
+            INSERT INTO "beach-box"."Cliente" (id, nome, telefone, endereco)
+            VALUES (:id, :nome, :telefone, :endereco);
+            """
         )
         session.execute(
             query_cliente,
-            {"id": data["id"], "nome": data["nome"], "telefone": data["telefone"]},
+            {
+                "id": data["id"],
+                "nome": data["nome"],
+                "telefone": data["telefone"],
+                "endereco": data["endereco"],
+            },
         )
-
-        # Inserir endereços, se fornecidos
-        if "enderecos" in data:
-            query_endereco = text(
-                """
-                INSERT INTO "beach-box"."ClienteEndereco" ("idCliente", endereco)
-                VALUES (:idCliente, :endereco);
-            """
-            )
-            for endereco in data["enderecos"]:
-                session.execute(
-                    query_endereco, {"idCliente": data["id"], "endereco": endereco}
-                )
 
         session.commit()
         return (
@@ -135,32 +124,19 @@ def update_cliente(id):
         query_cliente = text(
             """
             UPDATE "beach-box"."Cliente"
-            SET nome = :nome, telefone = :telefone
+            SET nome = :nome, telefone = :telefone, endereco = :endereco
             WHERE id = :id;
-        """
+            """
         )
         session.execute(
             query_cliente,
-            {"id": id, "nome": data["nome"], "telefone": data["telefone"]},
+            {
+                "id": id,
+                "nome": data["nome"],
+                "telefone": data["telefone"],
+                "endereco": data["endereco"],
+            },
         )
-
-        if "enderecos" in data:
-            # Certifique-se de usar aspas duplas para "idCliente"
-            query_delete_enderecos = text(
-                """
-                DELETE FROM "beach-box"."ClienteEndereco" WHERE "idCliente" = :idCliente;
-            """
-            )
-            session.execute(query_delete_enderecos, {"idCliente": id})
-
-            query_endereco = text(
-                """
-                INSERT INTO "beach-box"."ClienteEndereco" ("idCliente", endereco)
-                VALUES (:idCliente, :endereco);
-            """
-            )
-            for endereco in data["enderecos"]:
-                session.execute(query_endereco, {"idCliente": id, "endereco": endereco})
 
         session.commit()
         return (
@@ -184,14 +160,6 @@ def update_cliente(id):
 def delete_cliente(id):
     session = config.get_session()
     try:
-        # Adicionar aspas duplas em "idCliente"
-        query_delete_enderecos = text(
-            """
-            DELETE FROM "beach-box"."ClienteEndereco" WHERE "idCliente" = :idCliente;
-            """
-        )
-        session.execute(query_delete_enderecos, {"idCliente": id})
-
         query_delete_cliente = text(
             """
             DELETE FROM "beach-box"."Cliente" WHERE id = :id;

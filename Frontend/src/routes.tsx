@@ -3,6 +3,7 @@ import ClientesPage from "@/views/clientes/page";
 import QuadrasPage from "@/views/quadras/page";
 import UnidadesPage from "./views/unidades/page";
 import HomePage from "./views/home/page";
+import AgendamentosPage from "./views/agendamentos/page";
 
 export function AppRoutes() {
   return (
@@ -12,6 +13,8 @@ export function AppRoutes() {
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/quadras" element={<QuadrasPage />} />
         <Route path="/unidades" element={<UnidadesPage />} />
+        <Route path="/agendamentos" element={<AgendamentosPage />} />
+        {/* <Route path="/agendamento" element={<RelatorioPage />} /> */}
       </Routes>
     </Router>
   );

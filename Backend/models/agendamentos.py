@@ -3,22 +3,33 @@ from db.config import Config
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
 
-agendamentos_bp = Blueprint('agendamentos', __name__)
+agendamentos_bp = Blueprint("agendamentos", __name__)
 
 # Configuração do banco de dados
 config = Config()
 
-@agendamentos_bp.route('/agendamentos', methods=['GET'])
+
+@agendamentos_bp.route("/agendamentos", methods=["GET"])
 def get_agendamentos():
     session = config.get_session()
     try:
-        query = text("""
-            SELECT a.id, a."dataHoraAgendamento", a."preco", c.nome AS cliente, 
-                   q.nome AS quadra
+        query = text(
+            """
+            SELECT a.id, 
+                   a."dataHoraAgendamento", 
+                   a."preco", 
+                   a."idCliente", 
+                   c.nome AS cliente, 
+                   a."idQuadra", 
+                   q.nome AS quadra, 
+                   q."idUnidade", 
+                   u.nome AS unidade
             FROM "beach-box"."Agendamento" a
             LEFT JOIN "beach-box"."Cliente" c ON a."idCliente" = c.id
-            LEFT JOIN "beach-box"."Quadra" q ON a."idQuadra" = q.id;
-        """)
+            LEFT JOIN "beach-box"."Quadra" q ON a."idQuadra" = q.id
+            LEFT JOIN "beach-box"."Unidade" u ON q."idUnidade" = u.id;
+        """
+        )
 
         result = session.execute(query)
         agendamentos = [
@@ -26,8 +37,12 @@ def get_agendamentos():
                 "id": row["id"],
                 "dataHoraAgendamento": row["dataHoraAgendamento"],
                 "preco": row["preco"],
+                "idCliente": row["idCliente"],
                 "cliente": row["cliente"],
-                "quadra": row["quadra"]
+                "idQuadra": row["idQuadra"],
+                "quadra": row["quadra"],
+                "idUnidade": row["idUnidade"],
+                "unidade": row["unidade"],
             }
             for row in result.mappings()
         ]
@@ -46,7 +61,8 @@ def get_agendamentos():
     finally:
         session.close()
 
-@agendamentos_bp.route('/agendamentos', methods=['POST'])
+
+@agendamentos_bp.route("/agendamentos", methods=["POST"])
 def create_agendamento():
     session = config.get_session()
     try:
@@ -58,7 +74,11 @@ def create_agendamento():
             SELECT "estaDisponivel" FROM "beach-box"."Quadra" WHERE id = :idQuadra;
             """
         )
-        result = session.execute(check_disponibilidade_query, {"idQuadra": data["idQuadra"]}).mappings().fetchone()
+        result = (
+            session.execute(check_disponibilidade_query, {"idQuadra": data["idQuadra"]})
+            .mappings()
+            .fetchone()
+        )
 
         if not result or not result["estaDisponivel"]:
             return (
@@ -78,10 +98,17 @@ def create_agendamento():
             WHERE "idQuadra" = :idQuadra AND "dataHoraAgendamento" = :dataHoraAgendamento;
             """
         )
-        result = session.execute(
-            check_horario_query,
-            {"idQuadra": data["idQuadra"], "dataHoraAgendamento": data["dataHoraAgendamento"]}
-        ).mappings().fetchone()
+        result = (
+            session.execute(
+                check_horario_query,
+                {
+                    "idQuadra": data["idQuadra"],
+                    "dataHoraAgendamento": data["dataHoraAgendamento"],
+                },
+            )
+            .mappings()
+            .fetchone()
+        )
 
         if result["count"] > 0:
             return (
@@ -118,7 +145,7 @@ def create_agendamento():
                 "dataHoraAgendamento": data["dataHoraAgendamento"],
                 "preco": data["preco"],
                 "idQuadra": data["idQuadra"],
-                "idCliente": data["idCliente"]
+                "idCliente": data["idCliente"],
             },
         )
 
@@ -139,7 +166,8 @@ def create_agendamento():
     finally:
         session.close()
 
-@agendamentos_bp.route('/agendamentos/<int:id>', methods=['PUT'])
+
+@agendamentos_bp.route("/agendamentos/<int:id>", methods=["PUT"])
 def update_agendamento(id):
     session = config.get_session()
     try:
@@ -151,7 +179,11 @@ def update_agendamento(id):
             SELECT "estaDisponivel" FROM "beach-box"."Quadra" WHERE id = :idQuadra;
             """
         )
-        result = session.execute(check_disponibilidade_query, {"idQuadra": data["idQuadra"]}).mappings().fetchone()
+        result = (
+            session.execute(check_disponibilidade_query, {"idQuadra": data["idQuadra"]})
+            .mappings()
+            .fetchone()
+        )
 
         if not result or not result["estaDisponivel"]:
             return (
@@ -171,10 +203,18 @@ def update_agendamento(id):
             WHERE "idQuadra" = :idQuadra AND "dataHoraAgendamento" = :dataHoraAgendamento AND id != :id;
             """
         )
-        result = session.execute(
-            check_horario_query,
-            {"idQuadra": data["idQuadra"], "dataHoraAgendamento": data["dataHoraAgendamento"], "id": id}
-        ).mappings().fetchone()
+        result = (
+            session.execute(
+                check_horario_query,
+                {
+                    "idQuadra": data["idQuadra"],
+                    "dataHoraAgendamento": data["dataHoraAgendamento"],
+                    "id": id,
+                },
+            )
+            .mappings()
+            .fetchone()
+        )
 
         if result["count"] > 0:
             return (
@@ -202,7 +242,7 @@ def update_agendamento(id):
                 "dataHoraAgendamento": data["dataHoraAgendamento"],
                 "preco": data["preco"],
                 "idQuadra": data["idQuadra"],
-                "idCliente": data["idCliente"]
+                "idCliente": data["idCliente"],
             },
         )
 
@@ -223,7 +263,8 @@ def update_agendamento(id):
     finally:
         session.close()
 
-@agendamentos_bp.route('/agendamentos/<int:id>', methods=['DELETE'])
+
+@agendamentos_bp.route("/agendamentos/<int:id>", methods=["DELETE"])
 def delete_agendamento(id):
     session = config.get_session()
     try:

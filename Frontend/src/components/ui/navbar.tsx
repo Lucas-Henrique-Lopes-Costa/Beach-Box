@@ -20,6 +20,9 @@ export function Navbar() {
           <a href="/unidades">
             Unidades
           </a>
+          <a href="/agendamentos">
+            Agendamentos
+          </a>
         </nav>
         {/* Botão de Ação */}
         <Button variant="outline" className="border-white text-black">
