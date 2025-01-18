@@ -2,8 +2,8 @@ import React from "react";
 
 const HomePage: React.FC = () => {
   const team = [
-    { name: "Lucas Henrique", matricula: "123456" },
-    { name: "Thiago Lima Pereira", matricula: "789012" }
+    { name: "Lucas Henrique", matricula: "202310205" },
+    { name: "Thiago Lima Pereira", matricula: "202310057" }
   ];
 
   return (

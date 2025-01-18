@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Cliente, createColumns } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
-import { Toast } from "@/components/ui/toast";
+import { toast } from "@/hooks/use-toast";
 
 async function fetchAPI(url: string, options: RequestInit): Promise<any> {
   const response = await fetch(url, options);
@@ -35,9 +35,9 @@ export default function ClientesPage() {
       const data = await fetchAPI("http://localhost:5001/clientes", { method: "GET" });
       setClientes(data);
       setFilteredClientes(data);
-      Toast({ title: "Clientes carregados com sucesso", variant: "success" });
+      toast({ title: "Clientes carregados com sucesso", variant: "success" });
     } catch (error) {
-      Toast({ title: "Erro ao carregar clientes", description: String(error), variant: "destructive" });
+      toast({ title: "Erro ao carregar clientes", description: String(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -88,7 +88,7 @@ export default function ClientesPage() {
             enderecos: [formData.endereco],
           }),
         });
-        Toast({ title: "Cliente atualizado com sucesso", variant: "success" });
+        toast({ title: "Cliente atualizado com sucesso", variant: "success" });
       } else {
         await fetchAPI("http://localhost:5001/clientes", {
           method: "POST",
@@ -99,11 +99,11 @@ export default function ClientesPage() {
             enderecos: [formData.endereco],
           }),
         });
-        Toast({ title: "Cliente criado com sucesso", variant: "success" });
+        toast({ title: "Cliente criado com sucesso", variant: "success" });
       }
       setIsDialogOpen(false); // Fecha o popup após salvar
     } catch (error) {
-      Toast({ title: "Erro ao salvar cliente", description: String(error), variant: "destructive" });
+      toast({ title: "Erro ao salvar cliente", description: String(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -113,10 +113,10 @@ export default function ClientesPage() {
     try {
       setLoading(true);
       await fetchAPI(`http://localhost:5001/clientes/${id}`, { method: "DELETE" });
-      Toast({ title: "Cliente excluído com sucesso", variant: "success" });
+      toast({ title: "Cliente excluído com sucesso", variant: "success" });
       await fetchClientes(); // Atualiza a lista após excluir
     } catch (error) {
-      Toast({ title: "Erro ao excluir cliente", description: String(error), variant: "destructive" });
+      toast({ title: "Erro ao excluir cliente", description: String(error), variant: "destructive" });
     } finally {
       setLoading(false);
     }
