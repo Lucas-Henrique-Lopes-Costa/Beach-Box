@@ -8,17 +8,26 @@ import { DataTable } from "@/components/ui/data-table";
 async function getClientes(): Promise<Cliente[]> {
   const response = await fetch("http://localhost:5001/clientes");
   if (!response.ok) {
-    throw new Error("Erro ao buscar clientes");
+    throw new Error(`Erro ao buscar clientes: ${response.statusText}`);
   }
-  const data = await response.json();
+
+  const jsonResponse = await response.json();
+
+  if (jsonResponse.status !== "success" || !Array.isArray(jsonResponse.data)) {
+    throw new Error("Formato de resposta inesperado da API");
+  }
+
+  // Processa os dados retornados pela API
+  const data = jsonResponse.data;
 
   return data.map((cliente: any) => ({
-    id: cliente.id.toString(),
-    nome: cliente.nome,
-    telefone: cliente.telefone,
+    id: cliente.id?.toString() || "",
+    nome: cliente.nome || "",
+    telefone: cliente.telefone || "",
     enderecos: cliente.enderecos || [],
   }));
 }
+
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
