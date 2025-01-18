@@ -1,3 +1,5 @@
 sqlalchemy
 matplotlib
 psycopg2
+flask
+flask-cors

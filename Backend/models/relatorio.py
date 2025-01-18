@@ -1,4 +1,4 @@
-from Backend.config import Config
+from Backend.db.config import Config
 import pandas as pd
 import matplotlib.pyplot as plt
 from io import BytesIO

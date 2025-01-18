@@ -1,6 +1,6 @@
 from .observable_interface import Observable
 from sqlalchemy import text
-from Backend.config import Config
+from Backend.db.config import Config
 import pandas as pd
 
 class Agendamento(Observable):

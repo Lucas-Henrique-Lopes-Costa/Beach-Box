@@ -6,13 +6,12 @@ import { Cliente, createColumns } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
 
 async function getClientes(): Promise<Cliente[]> {
-  const response = await fetch("/api/clientes");
+  const response = await fetch("http://localhost:5001/clientes");
   if (!response.ok) {
     throw new Error("Erro ao buscar clientes");
   }
   const data = await response.json();
 
-  // Adaptar os dados para o formato esperado pelo frontend
   return data.map((cliente: any) => ({
     id: cliente.id.toString(),
     nome: cliente.nome,
