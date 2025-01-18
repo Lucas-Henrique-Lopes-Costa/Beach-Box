@@ -84,7 +84,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="text-center">
-                  Nenhum cliente encontrado.
+                  Nenhum dado encontrado.
                 </TableCell>
               </TableRow>
             )}
