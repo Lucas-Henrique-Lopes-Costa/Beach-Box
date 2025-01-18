@@ -1,8 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Unidade } from "./page";
 import { ActionCell } from "@/components/ui/ActionCell";
+
+export type Unidade = {
+  id: string;
+  nome: string;
+  localizacao: string;
+  telefone: string;
+};
 
 export const createColumns = (
   onEdit: (id: string) => void,

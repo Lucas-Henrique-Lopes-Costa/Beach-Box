@@ -16,7 +16,7 @@ def get_quadras():
             SELECT q.id, q.nome, q.localizacao, u.nome AS unidade, q.precoBase, 
                    q.estaDisponivel, q.tipo
             FROM "beach-box"."Quadra" q
-            LEFT JOIN "beach-box"."Unidade" u ON q.idUnidade = u.id;
+            LEFT JOIN "beach-box"."Unidade" u ON q."idUnidade" = u.id;
         """)
 
         result = session.execute(query)
