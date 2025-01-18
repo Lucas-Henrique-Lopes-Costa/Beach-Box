@@ -5,7 +5,6 @@ from sqlalchemy.sql import text
 
 clientes_bp = Blueprint('clientes', __name__)
 
-# Configuração do banco de dados
 config = Config()
 
 @clientes_bp.route('/clientes', methods=['GET'])
@@ -20,7 +19,6 @@ def get_clientes():
             GROUP BY c.id, c.nome, c.telefone;
         """)
         
-        # Executa a consulta e utiliza `.mappings()` para acessar como dicionário
         result = session.execute(query)
         clientes = [
             {

@@ -8,15 +8,23 @@ import { createColumns } from "./columns";
 export type Unidade = {
   id: string;
   nome: string;
-  endereco: string;
+  localizacao: string;
   telefone: string;
 };
 
 async function getUnidades(): Promise<Unidade[]> {
-  return [
-    { id: "1", nome: "Unidade 1", endereco: "Rua A, 123", telefone: "123456789" },
-    { id: "2", nome: "Unidade 2", endereco: "Rua B, 456", telefone: "987654321" },
-  ];
+  const response = await fetch("http://localhost:5001/unidades");
+  if (!response.ok) {
+    throw new Error("Erro ao buscar unidades");
+  }
+  const data = await response.json();
+
+  return data.map((unidade: any) => ({
+    id: unidade.id.toString(),
+    nome: unidade.nome,
+    localizacao: unidade.localizacao,
+    telefone: unidade.telefone,
+  }));
 }
 
 export default function UnidadesPage() {
@@ -79,7 +87,7 @@ export default function UnidadesPage() {
                   handleSave({
                     id: selectedUnidade?.id || "",
                     nome: formData.get("nome") as string,
-                    endereco: formData.get("endereco") as string,
+                    localizacao: formData.get("localizacao") as string,
                     telefone: formData.get("telefone") as string,
                   });
                 }}
@@ -91,9 +99,9 @@ export default function UnidadesPage() {
                   className="mb-2"
                 />
                 <Input
-                  name="endereco"
+                  name="localizacao"
                   placeholder="Endereço"
-                  defaultValue={selectedUnidade?.endereco || ""}
+                  defaultValue={selectedUnidade?.localizacao || ""}
                   className="mb-2"
                 />
                 <Input
@@ -112,7 +120,7 @@ export default function UnidadesPage() {
           data={unidades.filter(
             (u) =>
               u.nome.toLowerCase().includes(search.toLowerCase()) ||
-              u.endereco.toLowerCase().includes(search.toLowerCase())
+              u.localizacao.toLowerCase().includes(search.toLowerCase())
           )}
         />
       </div>

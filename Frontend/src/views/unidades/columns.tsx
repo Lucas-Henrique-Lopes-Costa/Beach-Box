@@ -9,7 +9,7 @@ export const createColumns = (
   onDelete: (id: string) => void
 ): ColumnDef<Unidade>[] => [
   { accessorKey: "nome", header: "Nome" },
-  { accessorKey: "endereco", header: "Endereço" },
+  { accessorKey: "localizacao", header: "Localização" },
   { accessorKey: "telefone", header: "Telefone" },
   {
     id: "actions",
