@@ -23,6 +23,9 @@ export function Navbar() {
           <a href="/agendamentos">
             Agendamentos
           </a>
+          <a href="/relatorios">
+            Relatórios
+          </a>
         </nav>
         {/* Botão de Ação */}
         <Button variant="outline" className="border-white text-black">
