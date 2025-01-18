@@ -3,21 +3,24 @@ from db.config import Config
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
 
-quadras_bp = Blueprint('quadras', __name__)
+quadras_bp = Blueprint("quadras", __name__)
 
 # Configuração do banco de dados
 config = Config()
 
-@quadras_bp.route('/quadras', methods=['GET'])
+
+@quadras_bp.route("/quadras", methods=["GET"])
 def get_quadras():
     session = config.get_session()
     try:
-        query = text("""
-            SELECT q.id, q.nome, q.localizacao, u.nome AS unidade, q.precoBase, 
-                   q.estaDisponivel, q.tipo
+        query = text(
+            """
+            SELECT q."id", q."nome", q."localizacao", u."nome" AS unidade, q."precobase", 
+                   q."estaDisponivel", q.tipo
             FROM "beach-box"."Quadra" q
-            LEFT JOIN "beach-box"."Unidade" u ON q."idUnidade" = u.id;
-        """)
+            LEFT JOIN "beach-box"."Unidade" u ON q."idUnidade" = u."id";
+            """
+        )
 
         result = session.execute(query)
         quadras = [
@@ -26,9 +29,9 @@ def get_quadras():
                 "nome": row["nome"],
                 "localizacao": row["localizacao"],
                 "unidade": row["unidade"],
-                "precoBase": row["precoBase"],
+                "precobase": row["precobase"],
                 "estaDisponivel": row["estaDisponivel"],
-                "tipo": row["tipo"]
+                "tipo": row["tipo"],
             }
             for row in result.mappings()
         ]
@@ -47,7 +50,8 @@ def get_quadras():
     finally:
         session.close()
 
-@quadras_bp.route('/quadras', methods=['POST'])
+
+@quadras_bp.route("/quadras", methods=["POST"])
 def create_quadra():
     session = config.get_session()
     try:
@@ -57,7 +61,7 @@ def create_quadra():
         if "id" not in data or data["id"] is None:
             get_max_id_query = text(
                 """
-                SELECT COALESCE(MAX(id), 0) + 1 AS next_id FROM "beach-box"."Quadra";
+                SELECT COALESCE(MAX("id"), 0) + 1 AS next_id FROM "beach-box"."Quadra";
                 """
             )
             result = session.execute(get_max_id_query).mappings().fetchone()
@@ -66,8 +70,8 @@ def create_quadra():
         # Inserir nova quadra
         query = text(
             """
-            INSERT INTO "beach-box"."Quadra" (id, nome, localizacao, idUnidade, precoBase, estaDisponivel, tipo)
-            VALUES (:id, :nome, :localizacao, :idUnidade, :precoBase, :estaDisponivel, :tipo);
+            INSERT INTO "beach-box"."Quadra" ("id", "nome", "localizacao", "idUnidade", "precobase", "estaDisponivel", "tipo")
+            VALUES (:id, :nome, :localizacao, :idUnidade, :precobase, :estaDisponivel, :tipo);
             """
         )
         session.execute(
@@ -77,9 +81,9 @@ def create_quadra():
                 "nome": data["nome"],
                 "localizacao": data["localizacao"],
                 "idUnidade": data["idUnidade"],
-                "precoBase": data["precoBase"],
+                "precobase": data["precobase"],
                 "estaDisponivel": data["estaDisponivel"],
-                "tipo": data["tipo"]
+                "tipo": data["tipo"],
             },
         )
 
@@ -100,7 +104,8 @@ def create_quadra():
     finally:
         session.close()
 
-@quadras_bp.route('/quadras/<int:id>', methods=['PUT'])
+
+@quadras_bp.route("/quadras/<int:id>", methods=["PUT"])
 def update_quadra(id):
     session = config.get_session()
     try:
@@ -108,9 +113,9 @@ def update_quadra(id):
         query = text(
             """
             UPDATE "beach-box"."Quadra"
-            SET nome = :nome, localizacao = :localizacao, idUnidade = :idUnidade, 
-                precoBase = :precoBase, estaDisponivel = :estaDisponivel, tipo = :tipo
-            WHERE id = :id;
+            SET "nome" = :nome, "localizacao" = :localizacao, "idUnidade" = :idUnidade, 
+                "precobase" = :precobase, "estaDisponivel" = :estaDisponivel, "tipo" = :tipo
+            WHERE "id" = :id;
             """
         )
         session.execute(
@@ -120,9 +125,9 @@ def update_quadra(id):
                 "nome": data["nome"],
                 "localizacao": data["localizacao"],
                 "idUnidade": data["idUnidade"],
-                "precoBase": data["precoBase"],
+                "precobase": data["precobase"],
                 "estaDisponivel": data["estaDisponivel"],
-                "tipo": data["tipo"]
+                "tipo": data["tipo"],
             },
         )
 
@@ -143,7 +148,56 @@ def update_quadra(id):
     finally:
         session.close()
 
-@quadras_bp.route('/quadras/<int:id>', methods=['DELETE'])
+
+@quadras_bp.route("/quadras/<int:id>", methods=["PATCH"])
+def update_quadra_status(id):
+    """
+    Atualiza o status de disponibilidade de uma quadra.
+    """
+    session = config.get_session()
+    try:
+        data = request.json
+        if "estaDisponivel" not in data:
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": "Campo 'estaDisponivel' é obrigatório",
+                    }
+                ),
+                400,
+            )
+
+        query = text(
+            """
+            UPDATE "beach-box"."Quadra"
+            SET "estaDisponivel" = :estaDisponivel
+            WHERE "id" = :id;
+            """
+        )
+        session.execute(
+            query,
+            {"id": id, "estaDisponivel": data["estaDisponivel"]},
+        )
+
+        session.commit()
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "message": f"Status de disponibilidade da quadra com ID {id} atualizado com sucesso",
+                }
+            ),
+            200,
+        )
+    except SQLAlchemyError as e:
+        session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        session.close()
+
+
+@quadras_bp.route("/quadras/<int:id>", methods=["DELETE"])
 def delete_quadra(id):
     session = config.get_session()
     try:

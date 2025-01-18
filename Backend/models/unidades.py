@@ -3,19 +3,22 @@ from db.config import Config
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
 
-unidades_bp = Blueprint('unidades', __name__)
+unidades_bp = Blueprint("unidades", __name__)
 
 # Configuração do banco de dados
 config = Config()
 
-@unidades_bp.route('/unidades', methods=['GET'])
+
+@unidades_bp.route("/unidades", methods=["GET"])
 def get_unidades():
     session = config.get_session()
     try:
-        query = text("""
+        query = text(
+            """
             SELECT id, nome, localizacao, telefone
             FROM "beach-box"."Unidade";
-        """)
+        """
+        )
 
         result = session.execute(query)
         unidades = [
@@ -23,7 +26,7 @@ def get_unidades():
                 "id": row["id"],
                 "nome": row["nome"],
                 "localizacao": row["localizacao"],
-                "telefone": row["telefone"]
+                "telefone": row["telefone"],
             }
             for row in result.mappings()
         ]
@@ -42,7 +45,8 @@ def get_unidades():
     finally:
         session.close()
 
-@unidades_bp.route('/unidades', methods=['POST'])
+
+@unidades_bp.route("/unidades", methods=["POST"])
 def create_unidade():
     session = config.get_session()
     try:
@@ -90,7 +94,7 @@ def create_unidade():
                 "id": data["id"],
                 "nome": data["nome"],
                 "localizacao": data["localizacao"],
-                "telefone": data["telefone"]
+                "telefone": data["telefone"],
             },
         )
 
@@ -111,7 +115,8 @@ def create_unidade():
     finally:
         session.close()
 
-@unidades_bp.route('/unidades/<int:id>', methods=['PUT'])
+
+@unidades_bp.route("/unidades/<int:id>", methods=["PUT"])
 def update_unidade(id):
     session = config.get_session()
     try:
@@ -129,7 +134,7 @@ def update_unidade(id):
                 "id": id,
                 "nome": data["nome"],
                 "localizacao": data["localizacao"],
-                "telefone": data["telefone"]
+                "telefone": data["telefone"],
             },
         )
 
@@ -150,7 +155,8 @@ def update_unidade(id):
     finally:
         session.close()
 
-@unidades_bp.route('/unidades/<int:id>', methods=['DELETE'])
+
+@unidades_bp.route("/unidades/<int:id>", methods=["DELETE"])
 def delete_unidade(id):
     session = config.get_session()
     try:

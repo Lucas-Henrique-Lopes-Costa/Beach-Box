@@ -1,9 +1,23 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { Quadra } from "./page";
 import { Button } from "@/components/ui/button";
 import { ActionCell } from "@/components/ui/ActionCell";
+
+type Unidade = {
+  id: string;
+  nome: string;
+};
+
+export type Quadra = {
+  id: string;
+  nome: string;
+  localizacao: string;
+  tipo: string;
+  precobase: number;
+  estaDisponivel: boolean;
+  unidades: Unidade[];
+};
 
 export const createColumns = (
   toggleDisponibilidade: (id: string) => void,
@@ -12,17 +26,17 @@ export const createColumns = (
 ): ColumnDef<Quadra>[] => [{ accessorKey: "nome", header: "Nome" },
 { accessorKey: "localizacao", header: "Localização" },
 { accessorKey: "tipo", header: "Tipo" },
-{ accessorKey: "preco", header: "Preço", cell: ({ row }) => `R$ ${row.original.preco}` },
+{ accessorKey: "preco", header: "Preço", cell: ({ row }) => `R$ ${row.original.precobase}` },
 {
   accessorKey: "disponivel",
   header: "Disponibilidade",
   cell: ({ row }) => (
     <div className="flex items-center">
       <span
-        className={`mr-2 ${row.original.disponivel ? "text-green-600" : "text-red-600"
+        className={`mr-2 ${row.original.estaDisponivel ? "text-green-600" : "text-red-600"
           }`}
       >
-        {row.original.disponivel ? "Disponível" : "Indisponível"}
+        {row.original.estaDisponivel ? "Disponível" : "Indisponível"}
       </span>
       <Button
         variant="outline"
