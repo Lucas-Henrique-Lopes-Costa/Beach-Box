@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -20,7 +13,15 @@ import {
   PointElement,
   LineElement,
 } from "chart.js";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 
 // Registra os componentes necessários do Chart.js
 ChartJS.register(
@@ -42,7 +43,11 @@ type FilterData = {
 };
 
 type RelatorioDiario = {
+  capacidade_restante: number;
+  faturamento_maximo: number;
+  gap_faturamento: number;
   faturamento: number;
+  total_agendamentos: number;
   faturamento_por_quadra: Record<string, number>;
   agendamentos_por_horario: Record<number, number>;
 };
@@ -50,6 +55,10 @@ type RelatorioDiario = {
 type RelatorioCustomizado = {
   faturamento_por_tempo: Record<string, number>;
   agendamentos_por_horario: Record<number, number>;
+  total_agendamentos: number;
+  faturamento_maximo: number;
+  faturamento: number;
+  gap_faturamento: number;
 };
 
 async function fetchAPI(url: string, options: RequestInit): Promise<any> {
@@ -84,14 +93,14 @@ export default function DashboardPage() {
   }, []);
 
   const fetchUnidades = async () => {
-  try {
-    const response = await fetchAPI("http://localhost:5001/unidades", { method: "GET" });
-    const data = response.data; // Supondo que os dados estão em response.data
-    setUnidades(data); // Salve todo o objeto (id e nome)
-  } catch (error) {
-    toast({ title: "Erro ao carregar unidades", description: String(error), variant: "destructive" });
-  }
-};
+    try {
+      const response = await fetchAPI("http://localhost:5001/unidades", { method: "GET" });
+      const data = response.data; // Supondo que os dados estão em response.data
+      setUnidades(data); // Salve todo o objeto (id e nome)
+    } catch (error) {
+      toast({ title: "Erro ao carregar unidades", description: String(error), variant: "destructive" });
+    }
+  };
 
 
   const fetchQuadras = async () => {
@@ -161,6 +170,51 @@ export default function DashboardPage() {
       {relatorioDiario && (
         <>
           <h2 className="text-2xl font-bold mb-4">Relatório Diário - {today}</h2>
+
+          {/* Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Total Agendamentos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">{relatorioDiario.total_agendamentos}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Horários Restantes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">{relatorioDiario.capacidade_restante}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Faturamento</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">R$ {relatorioDiario.faturamento.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Faturamento Máximo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">R$ {relatorioDiario.faturamento_maximo.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Gap de Faturamento</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">R$ {relatorioDiario.gap_faturamento.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+          </div>
+
           <Bar
             data={{
               labels: Object.keys(relatorioDiario.faturamento_por_quadra),
@@ -179,6 +233,21 @@ export default function DashboardPage() {
               scales: { x: { beginAtZero: true } },
             }}
           />
+
+
+          {/* Tabela de Faturamento por Quadra */}
+          <h3 className="text-xl font-bold mt-10 mb-4">Faturamento por Quadra</h3>
+          <Table>
+            <TableBody>
+              {Object.entries(relatorioDiario.faturamento_por_quadra).map(([quadra, faturamento]) => (
+                <TableRow key={quadra}>
+                  <TableCell>{quadra}</TableCell>
+                  <TableCell>R$ {faturamento.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
         </>
       )}
 
@@ -203,32 +272,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* <Select onValueChange={(value) => handleFilterChange("unidade", value)}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Selecione a Unidade" />
-          </SelectTrigger>
-          <SelectContent>
-            {unidades.map((unidade) => (
-              <SelectItem key={unidade} value={unidade}>
-                {unidade}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select onValueChange={(value) => handleFilterChange("quadra", value)}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Selecione a Quadra" />
-          </SelectTrigger>
-          <SelectContent>
-            {quadras.map((quadra) => (
-              <SelectItem key={quadra} value={quadra}>
-                {quadra}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select> */}
-
         <Button onClick={fetchRelatorioCustomizado} disabled={loading}>
           Gerar Relatório Customizado
         </Button>
@@ -236,6 +279,42 @@ export default function DashboardPage() {
 
       {relatorioCustomizado && (
         <>
+          {/* Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Total Agendamentos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">{relatorioCustomizado.total_agendamentos}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Faturamento</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">R$ {relatorioCustomizado.faturamento.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Faturamento Máximo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">R$ {relatorioCustomizado.faturamento_maximo.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Gap de Faturamento</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xl font-bold">R$ {relatorioCustomizado.gap_faturamento.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+          </div>
+
           <Line
             data={{
               labels: Object.keys(relatorioCustomizado.faturamento_por_tempo),

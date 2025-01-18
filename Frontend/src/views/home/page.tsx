@@ -12,7 +12,7 @@ const HomePage: React.FC = () => {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "90vh",
+        height: "95vh",
         backgroundColor: "#f4f4f9",
         margin: 0,
         padding: 0,
