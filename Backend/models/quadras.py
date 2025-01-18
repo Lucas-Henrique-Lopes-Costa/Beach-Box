@@ -3,22 +3,25 @@ from db.config import Config
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
 
-quadras_bp = Blueprint('quadras', __name__)
+quadras_bp = Blueprint("quadras", __name__)
 
 # Configuração do banco de dados
 config = Config()
 
-@quadras_bp.route('/quadras', methods=['GET'])
+
+@quadras_bp.route("/quadras", methods=["GET"])
 def get_quadras():
     session = config.get_session()
     try:
-        query = text("""
-            SELECT q.id, q.nome, q.localizacao, q."idUnidade", q.precobase, q."estaDisponivel",
+        query = text(
+            """
+            SELECT q.id, q.nome, q.localizacao, q."idUnidade", q.precobase, q."estaDisponivel", q.tipo,
                    u.nome AS unidade_nome
             FROM "beach-box"."Quadra" q
             JOIN "beach-box"."Unidade" u ON q."idUnidade" = u.id;
-        """)
-        
+        """
+        )
+
         result = session.execute(query)
         quadras = [
             {
@@ -28,7 +31,8 @@ def get_quadras():
                 "idUnidade": row["idUnidade"],
                 "precobase": float(row["precobase"]) if row["precobase"] else None,
                 "estaDisponivel": row["estaDisponivel"],
-                "unidade_nome": row["unidade_nome"]
+                "tipo": row["tipo"],
+                "unidade_nome": row["unidade_nome"],
             }
             for row in result.mappings()
         ]
