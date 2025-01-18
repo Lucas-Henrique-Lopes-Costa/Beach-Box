@@ -1,47 +1,49 @@
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Cliente, createColumns } from "./columns";
 import { DataTable } from "@/components/ui/data-table";
+import { Toast } from "@/components/ui/toast";
 
-async function getClientes(): Promise<Cliente[]> {
-  const response = await fetch("http://localhost:5001/clientes");
-  if (!response.ok) {
-    throw new Error(`Erro ao buscar clientes: ${response.statusText}`);
-  }
-
+async function fetchAPI(url: string, options: RequestInit): Promise<any> {
+  const response = await fetch(url, options);
   const jsonResponse = await response.json();
-
-  if (jsonResponse.status !== "success" || !Array.isArray(jsonResponse.data)) {
-    throw new Error("Formato de resposta inesperado da API");
+  if (!response.ok || jsonResponse.status !== "success") {
+    throw new Error(jsonResponse.message || "Erro na API");
   }
-
-  // Processa os dados retornados pela API
-  const data = jsonResponse.data;
-
-  return data.map((cliente: any) => ({
-    id: cliente.id?.toString() || "",
-    nome: cliente.nome || "",
-    telefone: cliente.telefone || "",
-    enderecos: cliente.enderecos || [],
-  }));
+  return jsonResponse.data;
 }
-
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [filteredClientes, setFilteredClientes] = useState<Cliente[]>([]);
   const [search, setSearch] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
+  const [formData, setFormData] = useState({ nome: "", telefone: "", endereco: "" });
+  const [loading, setLoading] = useState(true);
 
+  // Carrega os clientes ao abrir a tela
   useEffect(() => {
-    getClientes().then((data) => {
-      setClientes(data);
-      setFilteredClientes(data);
-    });
+    fetchClientes();
   }, []);
 
+  const fetchClientes = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchAPI("http://localhost:5001/clientes", { method: "GET" });
+      setClientes(data);
+      setFilteredClientes(data);
+      Toast({ title: "Clientes carregados com sucesso", variant: "success" });
+    } catch (error) {
+      Toast({ title: "Erro ao carregar clientes", description: String(error), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filtro de busca
   useEffect(() => {
     const lowerSearch = search.toLowerCase();
     setFilteredClientes(
@@ -57,117 +59,139 @@ export default function ClientesPage() {
     const cliente = clientes.find((c) => c.id === id);
     if (cliente) {
       setSelectedCliente(cliente);
-    }
-  };
-
-  const handleDelete = (id: string) => {
-    setClientes((prev) => prev.filter((c) => c.id !== id));
-    setFilteredClientes((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedCliente) {
-      // Novo Cliente
-      const newCliente: Cliente = {
-        id: Date.now().toString(),
-        nome: formData.nome,
-        telefone: formData.telefone,
-        enderecos: [formData.endereco],
-      };
-      setClientes((prev) => [...prev, newCliente]);
-      setFilteredClientes((prev) => [...prev, newCliente]);
-    } else {
-      // Editar Cliente
-      const updatedClientes = clientes.map((c) =>
-        c.id === selectedCliente.id
-          ? { ...c, nome: formData.nome, telefone: formData.telefone, enderecos: [formData.endereco] }
-          : c
-      );
-      setClientes(updatedClientes);
-      setFilteredClientes(updatedClientes);
-      setSelectedCliente(null);
-    }
-
-    setFormData({ nome: "", telefone: "", endereco: "" });
-  };
-
-  const [formData, setFormData] = useState({
-    nome: "",
-    telefone: "",
-    endereco: "",
-  });
-
-  useEffect(() => {
-    if (selectedCliente) {
       setFormData({
-        nome: selectedCliente.nome,
-        telefone: selectedCliente.telefone,
-        endereco: selectedCliente.enderecos[0] || "",
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        endereco: cliente.enderecos[0] || "",
       });
-    } else {
-      setFormData({ nome: "", telefone: "", endereco: "" });
+      setIsDialogOpen(true);
     }
-  }, [selectedCliente]);
+  };
+
+  const handleNewCliente = () => {
+    setSelectedCliente(null);
+    setFormData({ nome: "", telefone: "", endereco: "" });
+    setIsDialogOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      if (selectedCliente) {
+        await fetchAPI(`http://localhost:5001/clientes/${selectedCliente.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: formData.nome,
+            telefone: formData.telefone,
+            enderecos: [formData.endereco],
+          }),
+        });
+        Toast({ title: "Cliente atualizado com sucesso", variant: "success" });
+      } else {
+        await fetchAPI("http://localhost:5001/clientes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: formData.nome,
+            telefone: formData.telefone,
+            enderecos: [formData.endereco],
+          }),
+        });
+        Toast({ title: "Cliente criado com sucesso", variant: "success" });
+      }
+      setIsDialogOpen(false); // Fecha o popup após salvar
+    } catch (error) {
+      Toast({ title: "Erro ao salvar cliente", description: String(error), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      setLoading(true);
+      await fetchAPI(`http://localhost:5001/clientes/${id}`, { method: "DELETE" });
+      Toast({ title: "Cliente excluído com sucesso", variant: "success" });
+      await fetchClientes(); // Atualiza a lista após excluir
+    } catch (error) {
+      Toast({ title: "Erro ao excluir cliente", description: String(error), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
       <h1 className="text-4xl font-bold text-center mt-10">Clientes</h1>
       <div className="container mx-auto py-10">
-        <div className="flex justify-between items-center mb-4">
-          <Input
-            placeholder="Pesquisar por nome ou telefone..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-sm"
-          />
-          <Dialog open={!!selectedCliente} onOpenChange={() => setSelectedCliente(null)}>
-            <DialogTrigger asChild>
-              <Button variant="outline">
-                {selectedCliente ? "Editar Cliente" : "Novo Cliente"}
+        {loading ? (
+          <div className="text-center">Carregando...</div>
+        ) : (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <Input
+                placeholder="Pesquisar por nome ou telefone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-sm"
+              />
+              <Button variant="outline" onClick={handleNewCliente}>
+                Novo Cliente
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <h2 className="text-lg font-bold mb-4">
-                {selectedCliente ? "Editar Cliente" : "Cadastrar Novo Cliente"}
-              </h2>
-              <form onSubmit={handleSave}>
-                <Input
-                  name="nome"
-                  placeholder="Nome"
-                  value={formData.nome}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nome: e.target.value })
-                  }
-                  className="mb-2"
-                />
-                <Input
-                  name="telefone"
-                  placeholder="Telefone"
-                  value={formData.telefone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, telefone: e.target.value })
-                  }
-                  className="mb-2"
-                />
-                <Input
-                  name="endereco"
-                  placeholder="Endereço"
-                  value={formData.endereco}
-                  onChange={(e) =>
-                    setFormData({ ...formData, endereco: e.target.value })
-                  }
-                  className="mb-2"
-                />
-                <Button type="submit">Salvar</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-        <DataTable
-          columns={createColumns(handleEdit, handleDelete)}
-          data={filteredClientes}
-        />
+            </div>
+            <DataTable
+              columns={createColumns(handleEdit, handleDelete)}
+              data={filteredClientes}
+            />
+            <Dialog
+              open={isDialogOpen}
+              onOpenChange={(isOpen) => {
+                setIsDialogOpen(isOpen);
+                if (!isOpen) fetchClientes(); // Atualiza os clientes ao fechar o popup
+              }}
+            >
+              <DialogContent>
+                <h2 className="text-lg font-bold mb-4">
+                  {selectedCliente ? "Editar Cliente" : "Cadastrar Novo Cliente"}
+                </h2>
+                <form onSubmit={handleSave}>
+                  <Input
+                    name="nome"
+                    placeholder="Nome"
+                    value={formData.nome}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nome: e.target.value })
+                    }
+                    className="mb-2"
+                  />
+                  <Input
+                    name="telefone"
+                    placeholder="Telefone"
+                    value={formData.telefone}
+                    onChange={(e) =>
+                      setFormData({ ...formData, telefone: e.target.value })
+                    }
+                    className="mb-2"
+                  />
+                  <Input
+                    name="endereco"
+                    placeholder="Endereço"
+                    value={formData.endereco}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endereco: e.target.value })
+                    }
+                    className="mb-2"
+                  />
+                  <Button type="submit">
+                    {selectedCliente ? "Atualizar" : "Criar"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
       </div>
     </>
   );
