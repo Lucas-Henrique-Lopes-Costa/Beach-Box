@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import ClientesPage from "@/view/clientes/page";
-import QuadrasPage from "@/view/quadras/page";
-import UnidadesPage from "./view/unidades/page";
+import ClientesPage from "@/views/clientes/page";
+import QuadrasPage from "@/views/quadras/page";
+import UnidadesPage from "./views/unidades/page";
 
 export function AppRoutes() {
   return (

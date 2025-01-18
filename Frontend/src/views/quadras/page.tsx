@@ -10,15 +10,25 @@ export type Quadra = {
   nome: string;
   localizacao: string;
   tipo: string;
-  preco: number;
+  precobase: number;
   disponivel: boolean;
 };
 
 async function getQuadras(): Promise<Quadra[]> {
-  return [
-    { id: "1", nome: "Quadra 1", localizacao: "Praia A", tipo: "Beach Tênis", preco: 50, disponivel: true },
-    { id: "2", nome: "Quadra 2", localizacao: "Praia B", tipo: "Vôlei", preco: 60, disponivel: false },
-  ];
+  const response = await fetch("http://localhost:5001/quadras");
+  if (!response.ok) {
+    throw new Error("Erro ao buscar quadras");
+  }
+  const data = await response.json();
+
+  return data.map((quadra: any) => ({
+    id: quadra.id.toString(),
+    nome: quadra.nome,
+    localizacao: quadra.localizacao,
+    tipo: quadra.tipo,
+    preco: quadra.precobase,
+    disponivel: quadra.disponivel,
+  }));
 }
 
 export default function QuadrasPage() {
@@ -59,7 +69,7 @@ export default function QuadrasPage() {
       nome: formData.get("nome") as string,
       localizacao: formData.get("localizacao") as string,
       tipo: formData.get("tipo") as string,
-      preco: parseFloat(formData.get("preco") as string),
+      precobase: parseFloat(formData.get("preco") as string),
       disponivel: selectedQuadra?.disponivel ?? true,
     };
 
@@ -124,7 +134,7 @@ export default function QuadrasPage() {
                   name="preco"
                   placeholder="Preço Base (R$)"
                   type="number"
-                  defaultValue={selectedQuadra?.preco || ""}
+                  defaultValue={selectedQuadra?.precobase || ""}
                   className="mb-2"
                 />
                 <Button type="submit">Salvar</Button>
