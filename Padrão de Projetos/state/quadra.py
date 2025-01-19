@@ -1,34 +1,4 @@
-class QuadraIndisponivel:
-    def verificar_disponibilidade(self):
-        return False
-
-    def alterar_estado(self):
-        print("Estado alterado para disponível.")
-
-
-class QuadraDisponivel:
-    def verificar_disponibilidade(self):
-        return True
-
-    def alterar_estado(self):
-        print("Estado alterado para indisponível.")
-
-
-class EstadoQuadra:
-    def __init__(self, estado_inicial):
-        self.estado = (
-            estado_inicial  # instância de QuadraDisponivel ou QuadraIndisponivel
-        )
-
-    def verificar_disponibilidade(self):
-        return self.estado.verificar_disponibilidade()
-
-    def alterar_estado(self):
-        if isinstance(self.estado, QuadraDisponivel):
-            self.estado = QuadraIndisponivel()
-        else:
-            self.estado = QuadraDisponivel()
-
+from estado_quadra import EstadoQuadra
 
 class Quadra:
     def __init__(self, id, nome, localizacao, unidade, preco_base, estado):
@@ -62,10 +32,10 @@ class Quadra:
         self.estado.alterar_estado()
         print(f"Estado da quadra {self.id} alterado.")
 
-
 # Exemplo de uso
 if __name__ == "__main__":
     # Criar instância de QuadraDisponivel
+    from quadra_disponivel import QuadraDisponivel
     estado_inicial = EstadoQuadra(QuadraDisponivel())
 
     # Criar uma instância da classe Quadra
@@ -78,10 +48,8 @@ if __name__ == "__main__":
     print(f"Disponível: {quadra.verificar_disponibilidade()}")
 
     # Alterar o estado da quadra
+    print("Alterando o estado da quadra...")
     quadra.alterar_estado()
-
-    print("Estado alterado.")
 
     # Verificar a disponibilidade novamente
     print(f"Disponível: {quadra.verificar_disponibilidade()}")
-
