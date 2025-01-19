@@ -3,16 +3,21 @@ from db.config import Config
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
 
+# Define um Blueprint para os endpoints relacionados aos agendamentos
 agendamentos_bp = Blueprint("agendamentos", __name__)
 
 # Configuração do banco de dados
 config = Config()
 
-
 @agendamentos_bp.route("/agendamentos", methods=["GET"])
 def get_agendamentos():
-    session = config.get_session()
+    """
+    Endpoint para obter a lista de agendamentos com informações detalhadas, 
+    incluindo cliente, quadra e unidade associada.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
+        # Consulta SQL para buscar os agendamentos e informações relacionadas
         query = text(
             """
             SELECT a.id, 
@@ -28,9 +33,10 @@ def get_agendamentos():
             LEFT JOIN "beach-box"."Cliente" c ON a."idCliente" = c.id
             LEFT JOIN "beach-box"."Quadra" q ON a."idQuadra" = q.id
             LEFT JOIN "beach-box"."Unidade" u ON q."idUnidade" = u.id;
-        """
+            """
         )
 
+        # Executa a consulta e mapeia os resultados para uma lista de dicionários
         result = session.execute(query)
         agendamentos = [
             {
@@ -46,6 +52,7 @@ def get_agendamentos():
             }
             for row in result.mappings()
         ]
+        # Retorna os agendamentos encontrados
         return (
             jsonify(
                 {
@@ -57,18 +64,21 @@ def get_agendamentos():
             200,
         )
     except SQLAlchemyError as e:
+        # Retorna um erro caso ocorra uma exceção ao acessar o banco de dados
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @agendamentos_bp.route("/agendamentos", methods=["POST"])
 def create_agendamento():
-    session = config.get_session()
+    """
+    Endpoint para criar um novo agendamento.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
-        data = request.json
+        data = request.json  # Obtém os dados da requisição
 
-        # Verificar se a quadra está disponível
+        # Verifica se a quadra está disponível para agendamento
         check_disponibilidade_query = text(
             """
             SELECT "estaDisponivel" FROM "beach-box"."Quadra" WHERE id = :idQuadra;
@@ -81,6 +91,7 @@ def create_agendamento():
         )
 
         if not result or not result["estaDisponivel"]:
+            # Retorna erro caso a quadra não esteja disponível
             return (
                 jsonify(
                     {
@@ -91,7 +102,7 @@ def create_agendamento():
                 400,
             )
 
-        # Verificar se já existe agendamento para o mesmo horário na mesma quadra
+        # Verifica se já existe um agendamento para o mesmo horário na mesma quadra
         check_horario_query = text(
             """
             SELECT COUNT(*) AS count FROM "beach-box"."Agendamento"
@@ -111,6 +122,7 @@ def create_agendamento():
         )
 
         if result["count"] > 0:
+            # Retorna erro caso já exista um agendamento no mesmo horário
             return (
                 jsonify(
                     {
@@ -121,7 +133,7 @@ def create_agendamento():
                 400,
             )
 
-        # Gerar ID automaticamente se não for fornecido
+        # Gerar ID automaticamente caso não seja fornecido
         if "id" not in data or data["id"] is None:
             get_max_id_query = text(
                 """
@@ -131,7 +143,7 @@ def create_agendamento():
             result = session.execute(get_max_id_query).mappings().fetchone()
             data["id"] = result["next_id"]
 
-        # Inserir novo agendamento
+        # Insere o novo agendamento no banco de dados
         query = text(
             """
             INSERT INTO "beach-box"."Agendamento" (id, "dataHoraAgendamento", "preco", "idQuadra", "idCliente")
@@ -149,7 +161,8 @@ def create_agendamento():
             },
         )
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso após a criação do agendamento
         return (
             jsonify(
                 {
@@ -161,19 +174,21 @@ def create_agendamento():
             201,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @agendamentos_bp.route("/agendamentos/<int:id>", methods=["PUT"])
 def update_agendamento(id):
-    session = config.get_session()
+    """
+    Endpoint para atualizar os dados de um agendamento existente.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
-        data = request.json
+        data = request.json  # Obtém os dados da requisição
 
-        # Verificar se a quadra está disponível
+        # Verifica se a quadra está disponível para agendamento
         check_disponibilidade_query = text(
             """
             SELECT "estaDisponivel" FROM "beach-box"."Quadra" WHERE id = :idQuadra;
@@ -186,6 +201,7 @@ def update_agendamento(id):
         )
 
         if not result or not result["estaDisponivel"]:
+            # Retorna erro caso a quadra não esteja disponível
             return (
                 jsonify(
                     {
@@ -196,7 +212,7 @@ def update_agendamento(id):
                 400,
             )
 
-        # Verificar se já existe agendamento para o mesmo horário na mesma quadra
+        # Verifica se já existe um agendamento no mesmo horário e quadra
         check_horario_query = text(
             """
             SELECT COUNT(*) AS count FROM "beach-box"."Agendamento"
@@ -217,6 +233,7 @@ def update_agendamento(id):
         )
 
         if result["count"] > 0:
+            # Retorna erro caso já exista um agendamento no mesmo horário
             return (
                 jsonify(
                     {
@@ -227,6 +244,7 @@ def update_agendamento(id):
                 400,
             )
 
+        # Atualiza os dados do agendamento no banco de dados
         query = text(
             """
             UPDATE "beach-box"."Agendamento"
@@ -246,7 +264,8 @@ def update_agendamento(id):
             },
         )
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso após a atualização
         return (
             jsonify(
                 {
@@ -258,16 +277,19 @@ def update_agendamento(id):
             200,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @agendamentos_bp.route("/agendamentos/<int:id>", methods=["DELETE"])
 def delete_agendamento(id):
-    session = config.get_session()
+    """
+    Endpoint para excluir um agendamento pelo ID.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
+        # Remove o agendamento do banco de dados
         query = text(
             """
             DELETE FROM "beach-box"."Agendamento" WHERE id = :id;
@@ -275,7 +297,8 @@ def delete_agendamento(id):
         )
         session.execute(query, {"id": id})
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso após a exclusão
         return (
             jsonify(
                 {
@@ -286,7 +309,7 @@ def delete_agendamento(id):
             200,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
+        session.close()  # Fecha a sessão com o banco de dados

@@ -3,16 +3,20 @@ from db.config import Config
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import text
 
+# Define um Blueprint para os endpoints relacionados às quadras
 quadras_bp = Blueprint("quadras", __name__)
 
 # Configuração do banco de dados
 config = Config()
 
-
 @quadras_bp.route("/quadras", methods=["GET"])
 def get_quadras():
-    session = config.get_session()
+    """
+    Endpoint para obter a lista de quadras, incluindo informações relacionadas à unidade.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
+        # Consulta SQL para buscar as informações das quadras e suas unidades
         query = text(
             """
             SELECT q."id", q."nome", q."localizacao", q."idUnidade", u."nome" AS unidade, q."precobase", 
@@ -22,6 +26,7 @@ def get_quadras():
             """
         )
 
+        # Executa a consulta e mapeia os resultados para uma lista de dicionários
         result = session.execute(query)
         quadras = [
             {
@@ -36,6 +41,7 @@ def get_quadras():
             }
             for row in result.mappings()
         ]
+        # Retorna as quadras encontradas em formato JSON
         return (
             jsonify(
                 {
@@ -47,18 +53,21 @@ def get_quadras():
             200,
         )
     except SQLAlchemyError as e:
+        # Retorna um erro caso ocorra uma exceção ao acessar o banco de dados
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @quadras_bp.route("/quadras", methods=["POST"])
 def create_quadra():
-    session = config.get_session()
+    """
+    Endpoint para criar uma nova quadra.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
-        data = request.json
+        data = request.json  # Obtém os dados da requisição
 
-        # Gerar ID automaticamente se não for fornecido
+        # Gerar ID automaticamente, caso não seja fornecido
         if "id" not in data or data["id"] is None:
             get_max_id_query = text(
                 """
@@ -68,7 +77,7 @@ def create_quadra():
             result = session.execute(get_max_id_query).mappings().fetchone()
             data["id"] = result["next_id"]
 
-        # Inserir nova quadra
+        # Insere a nova quadra no banco de dados
         query = text(
             """
             INSERT INTO "beach-box"."Quadra" ("id", "nome", "localizacao", "idUnidade", "precobase", "estaDisponivel", "tipo")
@@ -88,7 +97,8 @@ def create_quadra():
             },
         )
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso com os dados da quadra criada
         return (
             jsonify(
                 {
@@ -100,25 +110,28 @@ def create_quadra():
             201,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @quadras_bp.route("/quadras/<int:id>", methods=["PUT"])
 def update_quadra(id):
-    session = config.get_session()
+    """
+    Endpoint para atualizar os dados de uma quadra existente.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
-        data = request.json
+        data = request.json  # Obtém os dados da requisição
 
-        # Certifica-se de que idUnidade é válido e converte para inteiro, se necessário
+        # Valida e converte idUnidade, se necessário
         id_unidade = data.get("idUnidade")
         if isinstance(id_unidade, str) and id_unidade.isdigit():
             id_unidade = int(id_unidade)
         elif not isinstance(id_unidade, int):
             id_unidade = None
 
+        # Atualiza as informações da quadra no banco de dados
         query = text(
             """
             UPDATE "beach-box"."Quadra"
@@ -145,7 +158,8 @@ def update_quadra(id):
             },
         )
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso após a atualização
         return (
             jsonify(
                 {
@@ -156,21 +170,21 @@ def update_quadra(id):
             200,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @quadras_bp.route("/quadras/<int:id>", methods=["PATCH"])
 def update_quadra_status(id):
     """
-    Atualiza o status de disponibilidade de uma quadra.
+    Endpoint para atualizar o status de disponibilidade de uma quadra.
     """
-    session = config.get_session()
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
-        data = request.json
+        data = request.json  # Obtém os dados da requisição
         if "estaDisponivel" not in data:
+            # Retorna erro caso o campo 'estaDisponivel' não seja fornecido
             return (
                 jsonify(
                     {
@@ -181,6 +195,7 @@ def update_quadra_status(id):
                 400,
             )
 
+        # Atualiza o status de disponibilidade da quadra no banco de dados
         query = text(
             """
             UPDATE "beach-box"."Quadra"
@@ -193,7 +208,8 @@ def update_quadra_status(id):
             {"id": id, "estaDisponivel": data["estaDisponivel"]},
         )
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso após a atualização
         return (
             jsonify(
                 {
@@ -204,16 +220,19 @@ def update_quadra_status(id):
             200,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
-
+        session.close()  # Fecha a sessão com o banco de dados
 
 @quadras_bp.route("/quadras/<int:id>", methods=["DELETE"])
 def delete_quadra(id):
-    session = config.get_session()
+    """
+    Endpoint para excluir uma quadra pelo ID.
+    """
+    session = config.get_session()  # Cria uma sessão com o banco de dados
     try:
+        # Remove a quadra do banco de dados pelo ID
         query = text(
             """
             DELETE FROM "beach-box"."Quadra" WHERE id = :id;
@@ -221,7 +240,8 @@ def delete_quadra(id):
         )
         session.execute(query, {"id": id})
 
-        session.commit()
+        session.commit()  # Confirma a transação no banco de dados
+        # Retorna sucesso após a exclusão
         return (
             jsonify(
                 {
@@ -232,7 +252,7 @@ def delete_quadra(id):
             200,
         )
     except SQLAlchemyError as e:
-        session.rollback()
+        session.rollback()  # Reverte a transação em caso de erro
         return jsonify({"status": "error", "message": str(e)}), 500
     finally:
-        session.close()
+        session.close()  # Fecha a sessão com o banco de dados
