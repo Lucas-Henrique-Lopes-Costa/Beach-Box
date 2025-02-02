@@ -283,7 +283,6 @@ describe("CRUD Quadra", () => {
       cy.contains("button", "Nova Quadra").click();
       cy.get("form").should("be.visible");
       cy.wait(1500); // Aguarda o carregamento do formulário
-
       cy.get('input[name="nome"]').type(nomeQuadra);
       cy.wait(500);
       cy.get('input[name="localizacao"]').type(localizacao);
