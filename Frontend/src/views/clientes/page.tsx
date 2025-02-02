@@ -32,7 +32,7 @@ export default function ClientesPage() {
   const fetchClientes = async () => {
     try {
       setLoading(true);
-      const data = await fetchAPI("http://localhost:5001/clientes", { method: "GET" });
+      const data = await fetchAPI("/api/clientes", { method: "GET" });
       setClientes(data);
       setFilteredClientes(data);
       toast({ title: "Clientes carregados com sucesso", variant: "success" });
@@ -80,7 +80,7 @@ export default function ClientesPage() {
       setLoading(true);
       if (selectedCliente) {
         // Atualizar cliente existente
-        await fetchAPI(`http://localhost:5001/clientes/${selectedCliente.id}`, {
+        await fetchAPI(`/api/clientes/${selectedCliente.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -92,7 +92,7 @@ export default function ClientesPage() {
         toast({ title: "Cliente atualizado com sucesso", variant: "success" });
       } else {
         // Criar novo cliente
-        await fetchAPI("http://localhost:5001/clientes", {
+        await fetchAPI("/api/clientes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -115,7 +115,7 @@ export default function ClientesPage() {
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
-      await fetchAPI(`http://localhost:5001/clientes/${id}`, { method: "DELETE" });
+      await fetchAPI(`/api/clientes/${id}`, { method: "DELETE" });
       toast({ title: "Cliente excluído com sucesso", variant: "success" });
       fetchClientes(); // Atualiza a lista após excluir
     } catch (error) {

@@ -36,7 +36,7 @@ export default function UnidadesPage() {
   const fetchUnidades = async () => {
     try {
       setLoading(true);
-      const data = await fetchAPI("http://localhost:5001/unidades", {
+      const data = await fetchAPI("/api/unidades", {
         method: "GET",
       });
       setUnidades(data);
@@ -90,7 +90,7 @@ export default function UnidadesPage() {
       setLoading(true);
       if (selectedUnidade) {
         // Atualizar unidade existente
-        await fetchAPI(`http://localhost:5001/unidades/${selectedUnidade.id}`, {
+        await fetchAPI(`/api/unidades/${selectedUnidade.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -101,7 +101,7 @@ export default function UnidadesPage() {
         });
       } else {
         // Criar nova unidade
-        await fetchAPI("http://localhost:5001/unidades", {
+        await fetchAPI("/api/unidades", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
@@ -126,7 +126,7 @@ export default function UnidadesPage() {
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
-      await fetchAPI(`http://localhost:5001/unidades/${id}`, {
+      await fetchAPI(`/api/unidades/${id}`, {
         method: "DELETE",
       });
       toast({

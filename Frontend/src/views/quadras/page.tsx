@@ -45,7 +45,7 @@ export default function QuadrasPage() {
   const fetchQuadras = async () => {
     try {
       setLoading(true);
-      const data = await fetchAPI("http://localhost:5001/quadras", { method: "GET" });
+      const data = await fetchAPI("/api/quadras", { method: "GET" });
       setQuadras(data);
       setFilteredQuadras(data);
       toast({ title: "Quadras carregadas com sucesso", variant: "success" });
@@ -58,7 +58,7 @@ export default function QuadrasPage() {
 
   const fetchUnidades = async () => {
     try {
-      const data = await fetchAPI("http://localhost:5001/unidades", { method: "GET" });
+      const data = await fetchAPI("/api/unidades", { method: "GET" });
       setUnidades(data);
     } catch (error) {
       toast({ title: "Erro ao carregar unidades", description: String(error), variant: "destructive" });
@@ -130,14 +130,14 @@ export default function QuadrasPage() {
       };
 
       if (selectedQuadra) {
-        await fetchAPI(`http://localhost:5001/quadras/${selectedQuadra.id}`, {
+        await fetchAPI(`/api/quadras/${selectedQuadra.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
         toast({ title: "Quadra atualizada com sucesso", variant: "success" });
       } else {
-        await fetchAPI("http://localhost:5001/quadras", {
+        await fetchAPI("/api/quadras", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -157,7 +157,7 @@ export default function QuadrasPage() {
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
-      await fetchAPI(`http://localhost:5001/quadras/${id}`, { method: "DELETE" });
+      await fetchAPI(`/api/quadras/${id}`, { method: "DELETE" });
       toast({ title: "Quadra excluída com sucesso", variant: "success" });
       fetchQuadras();
     } catch (error) {
@@ -174,7 +174,7 @@ export default function QuadrasPage() {
 
       const updatedDisponibilidade = !quadra.estaDisponivel;
 
-      await fetchAPI(`http://localhost:5001/quadras/${id}`, {
+      await fetchAPI(`/api/quadras/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ estaDisponivel: updatedDisponibilidade }),

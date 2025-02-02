@@ -94,7 +94,7 @@ export default function DashboardPage() {
 
   const fetchUnidades = async () => {
     try {
-      const response = await fetchAPI("http://localhost:5001/unidades", { method: "GET" });
+      const response = await fetchAPI("/api/unidades", { method: "GET" });
       const data = response.data; // Supondo que os dados estão em response.data
       setUnidades(data); // Salve todo o objeto (id e nome)
     } catch (error) {
@@ -105,7 +105,7 @@ export default function DashboardPage() {
 
   const fetchQuadras = async () => {
     try {
-      const response = await fetchAPI("http://localhost:5001/quadras", { method: "GET" });
+      const response = await fetchAPI("/api/quadras", { method: "GET" });
       const data = response.data; // Supondo que os dados estão em response.data
       setQuadras(data.map((q: { nome: string }) => q.nome));
     } catch (error) {
@@ -118,7 +118,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const data: RelatorioDiario = await fetchAPI(
-        `http://localhost:5001/relatorios/diario?data=${today}`,
+        `/api/relatorios/diario?data=${today}`,
         { method: "GET" }
       );
       setRelatorioDiario(data);
@@ -133,7 +133,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       const data: RelatorioCustomizado = await fetchAPI(
-        `http://localhost:5001/relatorios/customizado`,
+        `/api/relatorios/customizado`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

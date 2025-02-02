@@ -65,7 +65,7 @@ export default function AgendamentosPage() {
   const fetchAgendamentos = async () => {
     try {
       setLoading(true);
-      const data: Agendamento[] = await fetchAPI("http://localhost:5001/agendamentos", { method: "GET" });
+      const data: Agendamento[] = await fetchAPI("/api/agendamentos", { method: "GET" });
       setAgendamentos(data);
       initializeFilters(data);
       toast({ title: "Agendamentos carregados com sucesso", variant: "success" });
@@ -78,7 +78,7 @@ export default function AgendamentosPage() {
 
   const fetchClientes = async () => {
     try {
-      const data = await fetchAPI("http://localhost:5001/clientes", { method: "GET" });
+      const data = await fetchAPI("/api/clientes", { method: "GET" });
       setClientes(data);
     } catch (error) {
       toast({ title: "Erro ao carregar clientes", description: String(error), variant: "destructive" });
@@ -87,7 +87,7 @@ export default function AgendamentosPage() {
 
   const fetchQuadras = async () => {
     try {
-      const data = await fetchAPI("http://localhost:5001/quadras", { method: "GET" });
+      const data = await fetchAPI("/api/quadras", { method: "GET" });
       setQuadras(data);
     } catch (error) {
       toast({ title: "Erro ao carregar quadras", description: String(error), variant: "destructive" });
@@ -163,14 +163,14 @@ export default function AgendamentosPage() {
       };
 
       if (selectedAgendamento) {
-        await fetchAPI(`http://localhost:5001/agendamentos/${selectedAgendamento.id}`, {
+        await fetchAPI(`/api/agendamentos/${selectedAgendamento.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
         toast({ title: "Agendamento atualizado com sucesso", variant: "success" });
       } else {
-        await fetchAPI("http://localhost:5001/agendamentos", {
+        await fetchAPI("/api/agendamentos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -190,7 +190,7 @@ export default function AgendamentosPage() {
   const handleDelete = async (id: string) => {
     try {
       setLoading(true);
-      await fetchAPI(`http://localhost:5001/agendamentos/${id}`, { method: "DELETE" });
+      await fetchAPI(`/api/agendamentos/${id}`, { method: "DELETE" });
       toast({ title: "Agendamento excluído com sucesso", variant: "success" });
       fetchAgendamentos();
     } catch (error) {
