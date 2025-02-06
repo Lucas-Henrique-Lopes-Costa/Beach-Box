@@ -44,7 +44,7 @@ inicializa o sonar(https://docs.sonarsource.com/sonarqube-server/latest/try-out-
 Acesso é:
 
 Usuário: admin
-Senha: admin
+Senha: Projeto@2025
 
 token: sqp_42d89dd7de102d2a27ec87f082557b94cdf3c34d
 
