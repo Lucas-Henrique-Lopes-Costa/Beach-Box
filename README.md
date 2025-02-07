@@ -38,7 +38,7 @@ npx cypress open
 inicializa o sonar(https://docs.sonarsource.com/sonarqube-server/latest/try-out-sonarqube/)
 
 ```
-/opt/sonarqube/bin/<OS>/sonar.sh console
+/opt/sonarqube/bin/macosx-universal-64/sonar.sh console
 ```
 
 Acesso é:

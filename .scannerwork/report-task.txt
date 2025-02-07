@@ -2,5 +2,5 @@ projectKey=beach-box
 serverUrl=http://localhost:9000
 serverVersion=25.2.0.102705
 dashboardUrl=http://localhost:9000/dashboard?id=beach-box
-ceTaskId=dfd37634-74ba-4b95-820a-f42068cc9c5c
-ceTaskUrl=http://localhost:9000/api/ce/task?id=dfd37634-74ba-4b95-820a-f42068cc9c5c
+ceTaskId=2aa08b12-9138-4e19-a6bf-973f2a62423f
+ceTaskUrl=http://localhost:9000/api/ce/task?id=2aa08b12-9138-4e19-a6bf-973f2a62423f
