@@ -132,3 +132,5 @@ dist
 
 # Python  
 *.pyc
+.DS_Store
+Backend/.DS_Store
